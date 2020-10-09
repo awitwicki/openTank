@@ -22,8 +22,8 @@
                 var gp = gamepads[0];
                 if (gp) {
                     //gamepadInfo.innerHTML = "Gamepad connected at index " + gp.index + ": " + gp.id +". It has " + gp.buttons.length + " buttons and " + gp.axes.length + " axes.";
-                    var motor1 = -parseInt(gp.axes[1] * 255);
-                    var motor2 = -parseInt(gp.axes[3] * 255);
+                    var motor1 = -parseInt(gp.axes[1] * 100);
+                    var motor2 = -parseInt(gp.axes[3] * 100);
                     setr[0] = motor1;
                     setr[1] = motor2;
                 }
