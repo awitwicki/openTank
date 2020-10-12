@@ -5,13 +5,6 @@ import tornado.websocket
 import tornado.ioloop
 import tornado.web
 import socket
-import asyncio
-import websockets
-import tornado.httpserver
-import tornado.websocket
-import tornado.ioloop
-import tornado.web
-import socket
 import datetime
 import time
 import threading
@@ -23,8 +16,8 @@ GPIO.setwarnings(False)
 #set GPIO numbering mode and define output pins
 GPIO.setmode(GPIO.BOARD)
 
-motor1a = 5
-motor1b = 7
+motor1a = 11
+motor1b = 13
 
 motor2a = 8
 motor2b = 10
@@ -33,6 +26,14 @@ GPIO.setup(motor1a,GPIO.OUT)
 GPIO.setup(motor1b,GPIO.OUT)
 GPIO.setup(motor2a,GPIO.OUT)
 GPIO.setup(motor2b,GPIO.OUT)
+
+m1_a = GPIO.PWM(motor1a, 100)
+m1_b = GPIO.PWM(motor1b, 100)
+m2_a = GPIO.PWM(motor2a, 100)
+m2_b = GPIO.PWM(motor2b, 100)
+
+m1_last_value = 0
+m2_last_value = 0
 
 def parse_values(values):
     try:
@@ -65,44 +66,66 @@ class motor_controller:
                 self.set_values(0, 0)
 
     def init_driver(self):
+        m1_a.start(0)
+        m2_a.start(0)
+
         print('starting loop timeouter')
         self.t = threading.Thread(target=self._check_timeout)
         self.t.start()
 
     def close_driver(self):
         print('driver is closed')
-        # self.t._stop()
+        m1_a.stop()
+        m1_b.stop()
+        m2_a.stop()
+        m2_b.stop()
 
     def set_values(self, motor1: int, motor2: int):
-        if -255 <= motor1 <= 255 and -255 <= motor2 <= 255:
+        global m1_last_value
+        global m2_last_value
+
+        if -100 <= motor1 <= 100 and -100 <= motor2 <= 100:
             self.last_update = datetime.datetime.now()
             self.motors_state = True
-            # print(f'set motors to values <{motor1}, {motor2}>')
-
-            if motor1 == 1:
-                motor1 = 0
-            if motor2 == 1:
-                motor2 = 0
+            print(f'set motors to values <{motor1}, {motor2}>')
 
             if motor1 > 1:
-                GPIO.output(motor1a,GPIO.HIGH)
-                GPIO.output(motor1b,GPIO.LOW)
+                m1_b.stop()
+                if m1_last_value > 0:
+                    m1_a.ChangeDutyCycle(motor1)
+                else:
+                    m1_a.start(motor1)
             elif motor1 < 0:
-                GPIO.output(motor1a,GPIO.LOW)
-                GPIO.output(motor1b,GPIO.HIGH)
+                m1_a.stop()
+                if m1_last_value < 0:
+                    m1_b.ChangeDutyCycle(-motor1)
+                else:
+                    m1_b.start(-motor1)
+                print(-motor1)
             elif motor1 == 0:
-                GPIO.output(motor1a,GPIO.LOW)
-                GPIO.output(motor1b,GPIO.LOW)
+                m1_a.stop()
+                m1_b.stop()
+
+            m1_last_value = motor1
 
             if motor2 > 1:
-                GPIO.output(motor2a,GPIO.HIGH)
-                GPIO.output(motor2b,GPIO.LOW)
+                m2_b.stop()
+                if m2_last_value > 0:
+                    m2_a.ChangeDutyCycle(motor2)
+                else:
+                    m2_a.start(motor2)
             elif motor2 < 0:
-                GPIO.output(motor2a,GPIO.LOW)
-                GPIO.output(motor2b,GPIO.HIGH)
+                m2_a.stop()
+                if m2_last_value < 0:
+                    m2_b.ChangeDutyCycle(-motor2)
+                else:
+                    m2_b.start(-motor2)
+                print(-motor2)
             elif motor2 == 0:
-                GPIO.output(motor2a,GPIO.LOW)
-                GPIO.output(motor2b,GPIO.LOW)
+                m2_a.stop()
+                m2_b.stop()
+
+            m2_last_value = motor2
 
             time.sleep(0.05)
 
@@ -139,8 +162,18 @@ application = tornado.web.Application([
 l293 = motor_controller()
 
 if __name__ == "__main__":
-    http_server = tornado.httpserver.HTTPServer(application)
-    http_server.listen(8765)
-    myIP = socket.gethostbyname(socket.gethostname())
-    print(f'Websocket Server Started at {myIP}')
-    tornado.ioloop.IOLoop.instance().start()
+    try:
+        http_server = tornado.httpserver.HTTPServer(application)
+        http_server.listen(8765)
+        myIP = socket.gethostbyname(socket.gethostname())
+        print(f'Websocket Server Started at {myIP}')
+        tornado.ioloop.IOLoop.instance().start()
+    except KeyboardInterrupt:
+        print('Koniec')
+        tornado.ioloop.IOLoop.instance().stop()
+    finally:
+        m1_a.stop()
+        m1_b.stop()
+        m2_a.stop()
+        m2_b.stop()
+        GPIO.cleanup()
