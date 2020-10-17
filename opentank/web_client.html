@@ -12,11 +12,19 @@
 
         var setr = [0, 0];
         var gamepad_conncted = true;
+        
+        var d = new Date();
+        var time = d.getMilliseconds();
+
+        //keyboard
+        var pressedKeys = {};
+        window.onkeyup = function(e) {pressedKeys[e.keyCode] = false;}
+        window.onkeydown = function(e) { pressedKeys[e.keyCode] = true;}
 
         function suk() {
             setr = [0, 0];
 
-            //get gamewpad axes
+            //gameppad control
             if (gamepad_conncted) {
                 var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []);
                 var gp = gamepads[0];
@@ -28,6 +36,32 @@
                     setr[1] = motor2;
                 }
             }
+
+            //keyboard control override gamepad ONE KEY PER TIME
+            //wasd = 87, 65, 83, 68
+            if(pressedKeys[87] == true)
+            {
+                // console.log("W");
+                setr = [100,100];
+            }
+            else if(pressedKeys[65] == true)
+            {
+                // console.log("A");
+                setr = [-100,100];
+            }
+            else if(pressedKeys[83] == true)
+            {
+                // console.log("S");
+                setr = [-100,-100];
+            }
+            else if(pressedKeys[68] == true)
+            {
+                // console.log("D");
+                setr = [100,-100];
+            }
+
+            d = new Date();
+            time = d.getMilliseconds();
             ws.send(setr);
         }
 
@@ -44,6 +78,11 @@
         ws.onmessage = function (evt) {
             var received_msg = evt.data;
             console.log("received: " + received_msg);
+
+            d = new Date();
+            var ping = d.getMilliseconds() - time;
+
+            document.getElementById('stat').innerHTML='ping: ' + ping + 'ms';
         };
 
         ws.onclose = function () {
@@ -54,6 +93,7 @@
 </head>
 
 <body>
+    <span id="stat">ping :</span>
 </body>
 
 </html>
