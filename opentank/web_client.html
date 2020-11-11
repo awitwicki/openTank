@@ -1,25 +1,63 @@
 <!DOCTYPE HTML>
-
 <html>
-
 <head>
     <style>
-        body{
+        body {
             background-color: darkolivegreen;
+        }
+
+        #stat {
+            font-size: 17px;
+            margin: 20px;
+            padding: 10px 15px;
+            z-index: 5;
+            position: absolute;
+            background-color: #02010080;
+            border-radius: 6px;
+        }
+
+        #wasd {
+            position: absolute;
+            z-index: 5;
+            bottom: 100px;
+            left: 50px;
+        }
+
+        #wasd .key {
+            width: 50px;
+            height: 50px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #02010080;
+            font-size: 20px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        #wasd .key-pressed {
+            background-color: #000000cc;
+        }
+
+        #wasd .key-row {
+            margin: 5px 0px;
+        }
+
+        #wasd .key-row-1 {
+            margin-left: 55px;
         }
     </style>
     <script type="text/javascript">
 
         var setr = [0, 0];
         var gamepad_conncted = true;
-        
+
         var d = new Date();
         var time = d.getMilliseconds();
 
         //keyboard
         var pressedKeys = {};
-        window.onkeyup = function(e) {pressedKeys[e.keyCode] = false;}
-        window.onkeydown = function(e) { pressedKeys[e.keyCode] = true;}
+        window.onkeyup = function (e) { pressedKeys[e.keyCode] = false; }
+        window.onkeydown = function (e) { pressedKeys[e.keyCode] = true; }
 
         function suk() {
             setr = [0, 0];
@@ -39,25 +77,31 @@
 
             //keyboard control override gamepad ONE KEY PER TIME
             //wasd = 87, 65, 83, 68
-            if(pressedKeys[87] == true)
-            {
+            if (pressedKeys[87] == true) {
                 // console.log("W");
-                setr = [100,100];
+                document.getElementById('W').setAttribute('class', 'key key-pressed');
+                setr = [100, 100];
             }
-            else if(pressedKeys[65] == true)
-            {
+            else if (pressedKeys[65] == true) {
                 // console.log("A");
-                setr = [-100,100];
+                document.getElementById('A').setAttribute('class', 'key key-pressed');
+                setr = [-100, 100];
             }
-            else if(pressedKeys[83] == true)
-            {
+            else if (pressedKeys[83] == true) {
                 // console.log("S");
-                setr = [-100,-100];
+                document.getElementById('S').setAttribute('class', 'key key-pressed');
+                setr = [-100, -100];
             }
-            else if(pressedKeys[68] == true)
-            {
+            else if (pressedKeys[68] == true) {
                 // console.log("D");
-                setr = [100,-100];
+                document.getElementById('D').setAttribute('class', 'key key-pressed');
+                setr = [100, -100];
+            }
+            else{
+                document.getElementById('W').setAttribute('class', 'key key-not-pressed');
+                document.getElementById('A').setAttribute('class', 'key key-not-pressed');
+                document.getElementById('S').setAttribute('class', 'key key-not-pressed');
+                document.getElementById('D').setAttribute('class', 'key key-not-pressed');
             }
 
             d = new Date();
@@ -82,19 +126,25 @@
             d = new Date();
             var ping = d.getMilliseconds() - time;
 
-            document.getElementById('stat').innerHTML='ping: ' + ping + 'ms';
+            document.getElementById('stat').innerHTML = 'ping: ' + ping + 'ms';
         };
 
         ws.onclose = function () {
             alert("Connection is closed...");
         };
     </script>
-
 </head>
-
 <body>
     <span id="stat">ping :</span>
+    <div id="wasd" class="clr-white">
+        <div class="key-row key-row-1">
+            <span class="key" id="W">W</span>
+        </div>
+        <div class="key-row key-row-2">
+            <span class="key" id="A">A</span>
+            <span class="key" id="S">S</span>
+            <span class="key" id="D">D</span>
+        </div>
+    </div>
 </body>
-
 </html>
-
