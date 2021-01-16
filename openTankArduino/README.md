@@ -21,8 +21,8 @@
 |--|--|--|
 |5V|Vcc|Vcc|
 |Gnd|Gnd|Gnd|
-| Left motor A | D3|
-| Left motor B | D5|
-| Right motor A | D9|
-| Right motor B | D10|
+| Right motor A | D3|
+| Right motor B | D5|
+| Left motor A | D9|
+| Left motor B | D10|
 | | RX| Sbus receiver output|

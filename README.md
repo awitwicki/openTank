@@ -16,4 +16,4 @@
 * [Raspberry Pi PWM realization using websocket server](/opentank/ws_server.py)
 
 ## Arduino realization
-* [Arduino PWM realization using radio receiver](/openTankArduino/README.MD)
+* [Arduino PWM realization using radio receiver](/openTankArduino/README.md)
