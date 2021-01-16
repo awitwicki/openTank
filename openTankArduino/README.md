@@ -3,7 +3,7 @@
 - Arduino Nano (ATmega328)
 - Any IBus receiver
 - DC motors
-- L293D
+- L298N
 - 12V Baterry
 
 ## Arduinio library requirements
@@ -17,7 +17,7 @@
 
 <img src="../img/openTankArduino.png">
 
-| L293D| Arduino Nano  | Receiver |
+| L298N| Arduino Nano  | Receiver |
 |--|--|--|
 |5V|Vcc|Vcc|
 |Gnd|Gnd|Gnd|

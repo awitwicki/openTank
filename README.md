@@ -8,7 +8,7 @@
 - Raspberry Pi Zero (or Arduino Nano, UNO, Pro Mini)
 - Raspberry Pi Camera (optional)
 - DC motors
-- L293D
+- L298N
 - 12V Baterry
 
 ## Raspberry Pi realization
@@ -16,4 +16,4 @@
 * [Raspberry Pi PWM realization using websocket server](/opentank/ws_server.py)
 
 ## Arduino realization
-* [Arduino PWM realization using radio receiver](/openTankArduino/README.md)
+* [Arduino PWM realization using radio receiver](/openTankArduino)
