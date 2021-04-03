@@ -2,38 +2,60 @@
 #include <IBusBM.h>   //https://github.com/bmellink/IBusBM
 #include "GyverPWM.h" //https://alexgyver.ru/gyverpwm/
 
+#define LEFT_MOTOR 0
+#define RIGHT_MOTOR 1
+
 IBusBM IBus; // IBus object
 
-void setMotors(int leftMotor, int rightMotor)
+int LeftValue = 0; //left motor
+int RightValue = 0; //right motor
+
+void setMotors(int leftMotorValue, int rightMotorValue)
 {
-    //Left motor
-    int leftMotorFrontPWM, leftMotorBackPWM = 0;
-
-    if (leftMotor > 1500) //left motor forward
+    if (LeftValue != leftMotorValue)
     {
-        leftMotorFrontPWM = map(leftMotor, 1500, 2000, 0, 255); //255 => 8 bit timer
+        LeftValue = leftMotorValue;
+        setMotorPWM(LEFT_MOTOR, LeftValue);
     }
-    else if (leftMotor < 1500) //left motor forward
+    if (RightValue != rightMotorValue)
     {
-        leftMotorBackPWM = map(leftMotor, 1500, 1000, 0, 255); //255 => 8 bit timer
+        RightValue = rightMotorValue;
+        setMotorPWM(RIGHT_MOTOR, RightValue);
     }
+}
 
-    //Right motor
-    int rightMotorFrontPWM, rightMotorBackPWM = 0;
+void setMotorPWM(int motorNumber, int channelValue)
+{
+    int motorFrontPWM, motorBackPWM = 0;
 
-    if (rightMotor > 1500) //right motor forward
+    if (motorNumber == LEFT_MOTOR) //Left motor
     {
-        rightMotorFrontPWM = map(rightMotor, 1500, 2000, 0, 1023); //1023 => 10 bit timer
-    }
-    else if (rightMotor < 1500) //right motor forward
-    {
-        rightMotorBackPWM = map(rightMotor, 1500, 1000, 0, 1023); //1023 => 10 bit timer
-    }
+        if (channelValue > 1500) //forward
+        {
+            motorFrontPWM = map(channelValue, 1500, 2000, 0, 255); //255 => 8 bit timer
+        }
+        else if (channelValue < 1500) //backward
+        {
+            motorBackPWM = map(channelValue, 1500, 1000, 0, 255); //255 => 8 bit timer
+        }
 
-    PWM_16KHZ_D3(leftMotorFrontPWM);
-    PWM_16KHZ_D5(leftMotorBackPWM);
-    PWM_16KHZ_D9(rightMotorFrontPWM);
-    PWM_16KHZ_D10(rightMotorBackPWM);
+        PWM_16KHZ_D3(motorFrontPWM);
+        PWM_16KHZ_D5(motorBackPWM);
+    }
+    else if (motorNumber == RIGHT_MOTOR) //Right motor
+    {
+        if (channelValue > 1500) //forward
+        {
+            motorFrontPWM = map(channelValue, 1500, 2000, 0, 1023); //1023 => 10 bit timer
+        }
+        else if (channelValue < 1500) //backward
+        {
+            motorBackPWM = map(channelValue, 1500, 1000, 0, 1023); //1023 => 10 bit timer
+        }
+
+        PWM_16KHZ_D9(motorFrontPWM);
+        PWM_16KHZ_D10(motorBackPWM);
+    }
 }
 
 void setup()
@@ -61,8 +83,8 @@ void setup()
 void loop()
 {
     //channel values has range 1000..2000 1000 is minimum, 2000is maximum, 1500 equals center
-    uint16_t ch_1 = IBus.readChannel(2); //left stick Y
-    uint16_t ch_2 = IBus.readChannel(1); //right stick Y
+    uint16_t ch_1 = IBus.readChannel(1); //left stick Y
+    uint16_t ch_2 = IBus.readChannel(2); //right stick Y
 
     setMotors(ch_1, ch_2);
 }
