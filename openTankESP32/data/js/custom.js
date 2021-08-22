@@ -2,8 +2,22 @@ var targetUrl = `ws://${window.location.hostname}/ws`;
 var websocket;
 window.addEventListener('load', onLoad);
 
+var setr = [0, 0];
+var joy;
+
+var d = new Date();
+var time = d.getMilliseconds();
 
 function onLoad() {
+  var joyStickParameters = {
+    internalFillColor: "#000000",
+    internalLineWidth: "#000000",
+    internalStrokeColor: "#AAAAAA",
+    externalStrokeColor: "#000000",
+  };
+
+  joy = new JoyStick('joyDiv', joyStickParameters);
+
   initializeSocket();
 }
 
@@ -17,6 +31,7 @@ function initializeSocket() {
 
 function onOpen(event) {
   console.log('Starting connection to server..');
+  setInterval(loop, 100);
 }
 
 function onClose(event) {
@@ -26,40 +41,20 @@ function onClose(event) {
 
 function onMessage(event) {
   console.log("WebSocket message received:", event)
+  var received_msg = evt.data;
+  console.log("received: " + received_msg);
+
+  d = new Date();
+  var ping = d.getMilliseconds() - time;
+
+  document.getElementById('stat').innerHTML = 'ping: ' + ping + 'ms';
 }
 
-function sendMessage(message) {
-  websocket.send(message);
+function loop() {
+  setr[0] = joy.GetX();
+  setr[1] = joy.GetY();
+
+  d = new Date();
+  time = d.getMilliseconds();
+  websocket.send(setr);
 }
-
-/*
-O-Pad/ D-Pad Controller and Javascript Code
-*/
-// Prevent scrolling on every click!
-// super sweet vanilla JS delegated event handling!
-document.body.addEventListener("click", function (e) {
-  if (e.target && e.target.nodeName == "A") {
-    e.preventDefault();
-  }
-});
-
-function touchStartHandler(event) {
-  var direction = event.target.dataset.direction;
-  console.log('Touch Start :: ' + direction)
-  sendMessage(direction);
-}
-
-function touchEndHandler(event) {
-  const stop_command = 'stop';
-  var direction = event.target.dataset.direction;
-  console.log('Touch End :: ' + direction)
-  sendMessage(stop_command);
-}
-
-document.querySelectorAll('.control').forEach(item => {
-  item.addEventListener('touchstart', touchStartHandler)
-})
-
-document.querySelectorAll('.control').forEach(item => {
-  item.addEventListener('touchend', touchEndHandler)
-})
