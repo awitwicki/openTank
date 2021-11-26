@@ -21,6 +21,17 @@
 #define HREF_GPIO_NUM 23
 #define PCLK_GPIO_NUM 22
 
+// Motors configuration
+#define LEFT_MOTOR 0
+#define RIGHT_MOTOR 1
+
+// Pins
+static const int LeftMotorPinA = 14;
+static const int LeftMotorPinB = 15;
+
+static const int RightMotorPinA = 13;
+static const int RightMotorPinB = 12;
+
 // Change this to your network SSID
 const char *ssid = "OpenTank";
 const char *password = "88888888";
@@ -31,35 +42,105 @@ using namespace websockets;
 WebsocketsServer server;
 AsyncWebServer webserver(80);
 
-const int fwdPin = 2;   //Forward Motor Pin
-const int turnPin = 12; //Steering Servo Pin
+int LeftValue = 0; // Left motor
+int RightValue = 0; // Right motor
 
-// Arduino like analogWrite
-// value has to be between 0 and valueMax
-void fwdAnalogWrite(uint8_t channel, uint32_t value, uint32_t valueMax = 4000)
+void setMotorPWM(int motorNumber, int channelValue)
 {
-  // calculate duty, 8191 from 2 ^ 13 - 1
-  uint32_t duty = (8191 / valueMax) * min(value, valueMax);
-  ledcWrite(channel, duty);
+  int motorFrontPWM, motorBackPWM = 0;
+
+  if (motorNumber == LEFT_MOTOR) //Left motor
+  
+  
+
+  {
+    // Forward
+    if (channelValue > 0) {
+      motorFrontPWM = map(channelValue, 0, 100, 0, 255); //255 => 8 bit timer
+    }
+    else {
+      motorFrontPWM = 0;
+    }
+
+    // Backward
+    if (channelValue < 0) {
+      motorBackPWM = map(channelValue, -100, 0, 255, 0); //255 => 8 bit timer
+    }
+    else {
+      motorBackPWM = 0;
+    }
+
+    //motorFrontPWM = map(channelValue, -100, 100, 0, 255); //255 => 8 bit timer
+    ledcWrite(1, motorFrontPWM);
+    ledcWrite(2, motorBackPWM);
+  }
+  else if (motorNumber == RIGHT_MOTOR) //Right motor
+  {
+        // Forward
+        if (channelValue > 0) {
+          motorFrontPWM = map(channelValue, 0, 100, 0, 255); //255 => 8 bit timer
+        }
+        else {
+          motorFrontPWM = 0;
+        }
+
+        // Backward
+        if (channelValue < 0) {
+          motorBackPWM = map(channelValue, -100, 0, 255, 0); //255 => 8 bit timer
+        }
+        else {
+          motorBackPWM = 0;
+        }
+
+        ledcWrite(1, motorFrontPWM);
+        ledcWrite(2, motorBackPWM);
+  }
 }
-void steeringAnalogWrite(uint8_t channel, uint32_t value, uint32_t valueMax = 180)
+
+void setMotors(int steerValue, int forwardValue)
 {
-  // calculate duty, 8191 from 2 ^ 13 - 1
-  uint32_t duty = (8191 / valueMax) * min(value, valueMax);
-  ledcWrite(channel, duty);
+  int leftMotorValue, rightMotorValue = 0;
+
+  // TODO: add sterring coefficient
+  leftMotorValue = forwardValue;
+  rightMotorValue = forwardValue;
+
+  // Pseudocode:
+  //leftMotorValue = forwardValue * cos(steerValue);
+  //rightMotorValue = forwardValue * -cos(steerValue);
+
+  if (LeftValue != leftMotorValue)
+  {
+    LeftValue = leftMotorValue;
+    setMotorPWM(LEFT_MOTOR, LeftValue);
+  }
+  if (RightValue != rightMotorValue)
+  {
+    RightValue = rightMotorValue;
+    setMotorPWM(RIGHT_MOTOR, RightValue);
+  }
 }
+
 
 void setup()
 {
   Serial.begin(115200);
 
-  // forward motor PWM
-  ledcSetup(2, 200, 12);    //channel, freq, resolution
-  ledcAttachPin(fwdPin, 2); // pin, channel
+  // Configure motors PWM
+  // Forward motor A PWM
+  ledcSetup(1, 200, 8);    //channel, freq, resolution
+  ledcAttachPin(LeftMotorPinA, 2); // pin, channel
+
+  // Forward motor B PWM
+  ledcSetup(2, 200, 8);    //channel, freq, resolution
+  ledcAttachPin(LeftMotorPinB, 2); // pin, channel
+
+  ledcWrite(1, 0);
+  ledcWrite(2, 0);
 
   // steering servo PWM
-  ledcSetup(4, 50, 16);      //channel, freq, resolution
-  ledcAttachPin(turnPin, 4); // pin, channel
+  // ledcSetup(4, 50, 16);      //channel, freq, resolution
+  // ledcAttachPin(turnPin, 4); // pin, channel
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -82,7 +163,8 @@ void setup()
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
-  //init with high specs to pre-allocate larger buffers
+
+  // Init with high specs to pre-allocate larger buffers
   if (psramFound())
   {
     config.frame_size = FRAMESIZE_UXGA;
@@ -109,6 +191,10 @@ void setup()
 
   //WiFi create Access point
   WiFi.softAP(ssid, password);
+
+  // This code for AP mode
+  // WiFi.mode(WIFI_STA);
+  // WiFi.begin(ssid, password);
 
   Serial.print("AP IP Address: ");
   Serial.println(WiFi.softAPIP());
@@ -165,34 +251,12 @@ void handle_message(WebsocketsMessage msg)
   int steerValue = msg.data().substring(0, commaIndex).toInt();
   int forwardValue = msg.data().substring(commaIndex + 1).toInt();
 
-  if (steerValue > 5)
-  {
-    steeringAnalogWrite(4, 112);
-  }
-  else if (steerValue < -5)
-  {
-    steeringAnalogWrite(4, 65);
-  }
-  else
-  {
-    steeringAnalogWrite(4, 85); // center steering
-  }
-
-  forwardValue = map(forwardValue, 0, -90, 500, 2000);
-
-  if (forwardValue > 600)
-  {
-    fwdAnalogWrite(2, forwardValue);
-  }
-  else
-  {
-    fwdAnalogWrite(2, 0); // stop
-  }
+  setMotors(steerValue, forwardValue);
 }
 
 void loop()
 {
-  //mjpeg camera stream
+  // mjpeg camera stream
   auto client = server.accept();
   client.onMessage(handle_message);
   while (client.available())
