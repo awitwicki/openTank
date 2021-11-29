@@ -50,9 +50,6 @@ void setMotorPWM(int motorNumber, int channelValue)
   int motorFrontPWM, motorBackPWM = 0;
 
   if (motorNumber == LEFT_MOTOR) //Left motor
-  
-  
-
   {
     // Forward
     if (channelValue > 0) {
@@ -129,7 +126,7 @@ void setup()
   // Configure motors PWM
   // Forward motor A PWM
   ledcSetup(1, 200, 8);    //channel, freq, resolution
-  ledcAttachPin(LeftMotorPinA, 2); // pin, channel
+  ledcAttachPin(LeftMotorPinA, 1); // pin, channel
 
   // Forward motor B PWM
   ledcSetup(2, 200, 8);    //channel, freq, resolution
