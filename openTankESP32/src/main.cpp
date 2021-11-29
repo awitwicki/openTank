@@ -26,11 +26,11 @@
 #define RIGHT_MOTOR 1
 
 // Pins
-static const int LeftMotorPinA = 14;
-static const int LeftMotorPinB = 15;
+static const int LeftMotorPinA = 15;
+static const int LeftMotorPinB = 14;
 
-static const int RightMotorPinA = 13;
-static const int RightMotorPinB = 12;
+static const int RightMotorPinA = 12;
+static const int RightMotorPinB = 13;
 
 // Change this to your network SSID
 const char *ssid = "OpenTank";
@@ -45,79 +45,54 @@ AsyncWebServer webserver(80);
 int LeftValue = 0; // Left motor
 int RightValue = 0; // Right motor
 
-void setMotorPWM(int motorNumber, int channelValue)
-{
+void setMotorPWM(int motorNumber, int channelValue) {
   int motorFrontPWM, motorBackPWM = 0;
 
-  if (motorNumber == LEFT_MOTOR) //Left motor
-  {
-    // Forward
-    if (channelValue > 0) {
-      motorFrontPWM = map(channelValue, 0, 100, 0, 255); //255 => 8 bit timer
-    }
-    else {
-      motorFrontPWM = 0;
-    }
+  // Forward
+  if (channelValue > 0) {
+    motorFrontPWM = map(channelValue, 0, 100, 0, 255); //255 => 8 bit timer
+  }
+  else {
+    motorFrontPWM = 0;
+  }
 
-    // Backward
-    if (channelValue < 0) {
-      motorBackPWM = map(channelValue, -100, 0, 255, 0); //255 => 8 bit timer
-    }
-    else {
-      motorBackPWM = 0;
-    }
+  // Backward
+  if (channelValue < 0) {
+    motorBackPWM = map(channelValue, -100, 0, 255, 0); //255 => 8 bit timer
+  }
+  else {
+    motorBackPWM = 0;
+  }
 
-    //motorFrontPWM = map(channelValue, -100, 100, 0, 255); //255 => 8 bit timer
+  if (motorNumber == LEFT_MOTOR) {
     ledcWrite(1, motorFrontPWM);
     ledcWrite(2, motorBackPWM);
   }
-  else if (motorNumber == RIGHT_MOTOR) //Right motor
-  {
-        // Forward
-        if (channelValue > 0) {
-          motorFrontPWM = map(channelValue, 0, 100, 0, 255); //255 => 8 bit timer
-        }
-        else {
-          motorFrontPWM = 0;
-        }
-
-        // Backward
-        if (channelValue < 0) {
-          motorBackPWM = map(channelValue, -100, 0, 255, 0); //255 => 8 bit timer
-        }
-        else {
-          motorBackPWM = 0;
-        }
-
-        ledcWrite(1, motorFrontPWM);
-        ledcWrite(2, motorBackPWM);
+  else if (motorNumber == RIGHT_MOTOR) {
+    ledcWrite(3, motorFrontPWM);
+    ledcWrite(4, motorBackPWM);
   }
 }
 
-void setMotors(int steerValue, int forwardValue)
-{
+void setMotors(int steerValue, int forwardValue) {
   int leftMotorValue, rightMotorValue = 0;
 
-  // TODO: add sterring coefficient
-  leftMotorValue = forwardValue;
-  rightMotorValue = forwardValue;
+  rightMotorValue = forwardValue - steerValue;
+  leftMotorValue = forwardValue + steerValue;
 
-  // Pseudocode:
-  //leftMotorValue = forwardValue * cos(steerValue);
-  //rightMotorValue = forwardValue * -cos(steerValue);
+  // Constrain values to be between -100 and 100
+  rightMotorValue = max(-100, min(100, rightMotorValue));
+  leftMotorValue = max(-100, min(100, leftMotorValue));
 
-  if (LeftValue != leftMotorValue)
-  {
+  if (LeftValue != leftMotorValue) {
     LeftValue = leftMotorValue;
     setMotorPWM(LEFT_MOTOR, LeftValue);
   }
-  if (RightValue != rightMotorValue)
-  {
+  if (RightValue != rightMotorValue) {
     RightValue = rightMotorValue;
     setMotorPWM(RIGHT_MOTOR, RightValue);
   }
 }
-
 
 void setup()
 {
@@ -128,12 +103,21 @@ void setup()
   ledcSetup(1, 200, 8);    //channel, freq, resolution
   ledcAttachPin(LeftMotorPinA, 1); // pin, channel
 
-  // Forward motor B PWM
+  // Backward motor A PWM
   ledcSetup(2, 200, 8);    //channel, freq, resolution
   ledcAttachPin(LeftMotorPinB, 2); // pin, channel
 
-  ledcWrite(1, 0);
-  ledcWrite(2, 0);
+  // Forward motor B PWM
+  ledcSetup(1, 200, 8);    //channel, freq, resolution
+  ledcAttachPin(RightMotorPinA, 3); // pin, channel
+
+  // Backward motor B PWM
+  ledcSetup(2, 200, 8);    //channel, freq, resolution
+  ledcAttachPin(RightMotorPinB, 4); // pin, channel
+
+  for (int i = 0; i < 4; i++) {
+    ledcWrite(i, 0);
+  }
 
   // steering servo PWM
   // ledcSetup(4, 50, 16);      //channel, freq, resolution
