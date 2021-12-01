@@ -180,8 +180,8 @@ void setup()
   Serial.print("AP IP Address: ");
   Serial.println(WiFi.softAPIP());
 
-  // Wait some time to connect to wifi
-  for (int i = 0; i < 15 && WiFi.status() != WL_CONNECTED; i++)
+  // Waiting for connection to wifi
+  while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
     delay(1000);
