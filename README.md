@@ -12,7 +12,7 @@
 - 12V Baterry
 
 ## ESP32 realization
-* [ESP32 PWM with camera](/openTankESP32)
+* [ESP32 PWM with camera](/openTankESP32/README.md)
 
 ## Raspberry Pi realization
 * [Raspberry Pi PWM realization using SSH](/opentank/demotank_ssh.py)

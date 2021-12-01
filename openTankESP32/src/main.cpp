@@ -4,26 +4,10 @@
 #include "SPIFFS.h"
 #include "esp_camera.h"
 
-#define PWDN_GPIO_NUM 32
-#define RESET_GPIO_NUM -1
-#define XCLK_GPIO_NUM 0
-#define SIOD_GPIO_NUM 26
-#define SIOC_GPIO_NUM 27
-#define Y9_GPIO_NUM 35
-#define Y8_GPIO_NUM 34
-#define Y7_GPIO_NUM 39
-#define Y6_GPIO_NUM 36
-#define Y5_GPIO_NUM 21
-#define Y4_GPIO_NUM 19
-#define Y3_GPIO_NUM 18
-#define Y2_GPIO_NUM 5
-#define VSYNC_GPIO_NUM 25
-#define HREF_GPIO_NUM 23
-#define PCLK_GPIO_NUM 22
 
 // Motors configuration
-#define LEFT_MOTOR 0
-#define RIGHT_MOTOR 1
+static const uint8_t LEFT_MOTOR = 0;
+static const uint8_t RIGHT_MOTOR = 1;
 
 // Pins
 static const int LeftMotorPinA = 15;
@@ -75,10 +59,9 @@ void setMotorPWM(int motorNumber, int channelValue) {
 }
 
 void setMotors(int steerValue, int forwardValue) {
-  int leftMotorValue, rightMotorValue = 0;
-
-  rightMotorValue = forwardValue - steerValue;
-  leftMotorValue = forwardValue + steerValue;
+  // Calculate the PWM morotors values
+  int rightMotorValue = forwardValue - steerValue;
+  int leftMotorValue = forwardValue + steerValue;
 
   // Constrain values to be between -100 and 100
   rightMotorValue = max(-100, min(100, rightMotorValue));
@@ -88,14 +71,14 @@ void setMotors(int steerValue, int forwardValue) {
     LeftValue = leftMotorValue;
     setMotorPWM(LEFT_MOTOR, LeftValue);
   }
+
   if (RightValue != rightMotorValue) {
     RightValue = rightMotorValue;
     setMotorPWM(RIGHT_MOTOR, RightValue);
   }
 }
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
 
   // Configure motors PWM
@@ -115,45 +98,40 @@ void setup()
   ledcSetup(2, 200, 8);    //channel, freq, resolution
   ledcAttachPin(RightMotorPinB, 4); // pin, channel
 
+  // Set all pwm's to 0
   for (int i = 0; i < 4; i++) {
     ledcWrite(i, 0);
   }
 
-  // steering servo PWM
-  // ledcSetup(4, 50, 16);      //channel, freq, resolution
-  // ledcAttachPin(turnPin, 4); // pin, channel
-
+ // Camera module pinout configuration
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
-  config.pin_d0 = Y2_GPIO_NUM;
-  config.pin_d1 = Y3_GPIO_NUM;
-  config.pin_d2 = Y4_GPIO_NUM;
-  config.pin_d3 = Y5_GPIO_NUM;
-  config.pin_d4 = Y6_GPIO_NUM;
-  config.pin_d5 = Y7_GPIO_NUM;
-  config.pin_d6 = Y8_GPIO_NUM;
-  config.pin_d7 = Y9_GPIO_NUM;
-  config.pin_xclk = XCLK_GPIO_NUM;
-  config.pin_pclk = PCLK_GPIO_NUM;
-  config.pin_vsync = VSYNC_GPIO_NUM;
-  config.pin_href = HREF_GPIO_NUM;
-  config.pin_sscb_sda = SIOD_GPIO_NUM;
-  config.pin_sscb_scl = SIOC_GPIO_NUM;
-  config.pin_pwdn = PWDN_GPIO_NUM;
-  config.pin_reset = RESET_GPIO_NUM;
+  config.pin_d0 = 5; // Y2_GPIO_NUM
+  config.pin_d1 = 18; // Y3_GPIO_NUM
+  config.pin_d2 = 19; // Y4_GPIO_NUM
+  config.pin_d3 = 21; // Y5_GPIO_NUM
+  config.pin_d4 = 36; // Y6_GPIO_NUM
+  config.pin_d5 = 39; // Y7_GPIO_NUM
+  config.pin_d6 = 34; // Y8_GPIO_NUM
+  config.pin_d7 = 35; // Y9_GPIO_NUM
+  config.pin_xclk = 0; // XCLK_GPIO_NUM
+  config.pin_pclk = 22; // PCLK_GPIO_NUM
+  config.pin_vsync = 25; // VSYNC_GPIO_NUM
+  config.pin_href = 23; // HREF_GPIO_NUM
+  config.pin_sscb_sda = 26; // SIOD_GPIO_NUM
+  config.pin_sscb_scl = 27; // SIOC_GPIO_NUM
+  config.pin_pwdn = 32; // PWDN_GPIO_NUM
+  config.pin_reset = -1; // RESET_GPIO_NUM
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
 
   // Init with high specs to pre-allocate larger buffers
-  if (psramFound())
-  {
+  if (psramFound()) {
     config.frame_size = FRAMESIZE_UXGA;
     config.jpeg_quality = 10;
     config.fb_count = 2;
-  }
-  else
-  {
+  } else {
     config.frame_size = FRAMESIZE_SVGA;
     config.jpeg_quality = 12;
     config.fb_count = 1;
@@ -161,8 +139,7 @@ void setup()
 
   // camera init
   esp_err_t err = esp_camera_init(&config);
-  if (err != ESP_OK)
-  {
+  if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
     return;
   }
@@ -181,8 +158,7 @@ void setup()
   Serial.println(WiFi.softAPIP());
 
   // Waiting for connection to wifi
-  while (WiFi.status() != WL_CONNECTED)
-  {
+  while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(1000);
   }
@@ -193,8 +169,7 @@ void setup()
   Serial.println(WiFi.localIP()); // You can get IP address assigned to ESP
 
   // Initialize SPIFFS
-  if (!SPIFFS.begin(true))
-  {
+  if (!SPIFFS.begin(true)) {
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
@@ -226,8 +201,7 @@ void setup()
   Serial.println(server.available());
 }
 
-void handle_message(WebsocketsMessage msg)
-{
+void handle_message(WebsocketsMessage msg) {
   int commaIndex = msg.data().indexOf(',');
   int steerValue = msg.data().substring(0, commaIndex).toInt();
   int forwardValue = msg.data().substring(commaIndex + 1).toInt();
@@ -235,13 +209,12 @@ void handle_message(WebsocketsMessage msg)
   setMotors(steerValue, forwardValue);
 }
 
-void loop()
-{
-  // mjpeg camera stream
+void loop() {
+  // Mjpeg camera stream
   auto client = server.accept();
   client.onMessage(handle_message);
-  while (client.available())
-  {
+
+  while (client.available()) {
     client.poll();
     fb = esp_camera_fb_get();
     client.sendBinary((const char *)fb->buf, fb->len);
