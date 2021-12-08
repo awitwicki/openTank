@@ -1,7 +1,12 @@
 // Use this for tests on local machine without websocket server
-var test = false;
+var isTest = false;
 
 var targetUrl = "ws://" + window.location.host + ":82";
+
+// Keyboard
+var pressedKeys = {};
+window.onkeyup = function (e) { pressedKeys[e.keyCode] = false; }
+window.onkeydown = function (e) { pressedKeys[e.keyCode] = true; }
 
 var websocket;
 window.addEventListener('load', onLoad);
@@ -30,7 +35,7 @@ function onLoad() {
 function initializeSockets() {
   console.log('Opening WebSocket connection to OpenTank ESP32...');
 
-  if (!test) {
+  if (!isTest) {
     websocket = new WebSocket(targetUrl);
 
     websocket.onopen = event => {
@@ -60,15 +65,32 @@ function initializeSockets() {
 }
 
 function loop() {
-  //get data from canvas joy stick
+  // Get data from canvas joystick
   setr[0] = joy.GetX();
   setr[1] = joy.GetY();
+
+  // Get data from keyboard ONE KEY PER TIME
+  // Keyboard control override joystick
+  // WASD = 87, 65, 83, 68
+  if (pressedKeys[87] == true) { // W
+    setr[1] = 100;
+  }
+  else if (pressedKeys[83] == true) { // S
+    setr[1] = -100;
+  }
+
+  if (pressedKeys[65] == true) { // A
+    setr[0] = -100;
+  }
+  else if (pressedKeys[68] == true) { // D
+    setr[0] = 100;
+  }
 
   d = new Date();
   time = d.getMilliseconds();
 
   // Send data to tank
-  if (!test) {
+  if (!isTest) {
     websocket.send(setr);
   }
 }
