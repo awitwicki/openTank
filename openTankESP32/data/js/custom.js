@@ -1,3 +1,6 @@
+// Use this for tests on local machine without websocket server
+var test = false;
+
 var targetUrl = "ws://" + window.location.host + ":82";
 
 var websocket;
@@ -27,30 +30,33 @@ function onLoad() {
 function initializeSockets() {
   console.log('Opening WebSocket connection to OpenTank ESP32...');
 
-  websocket = new WebSocket(targetUrl);
+  if (!test) {
+    websocket = new WebSocket(targetUrl);
 
-  websocket.onopen = event => {
-    console.log('Starting connection to server..');
-    setInterval(loop, 100);
-  };
+    websocket.onopen = event => {
+      console.log('Starting connection to server..');
+    };
 
-  websocket.onmessage = message => {
-    if (message.data instanceof Blob) {
-      console.log("WebSocket image received")
-      var urlObject = URL.createObjectURL(message.data);
-      view.src = urlObject;
-    }
+    websocket.onmessage = message => {
+      if (message.data instanceof Blob) {
+        console.log("WebSocket image received")
+        var urlObject = URL.createObjectURL(message.data);
+        view.src = urlObject;
+      }
 
-    d = new Date();
-    var ping = d.getMilliseconds() - time;
-  
-    document.getElementById('stat').innerHTML = 'ping: ' + ping + 'ms';
-  };
+      d = new Date();
+      var ping = d.getMilliseconds() - time;
+    
+      document.getElementById('stat').innerHTML = 'ping: ' + ping + 'ms';
+    };
 
-  websocket.onclose = message => {
-    console.log('camWebSocket Closing connection to server..');
-    setTimeout(initializeSockets, 2000);
-  };
+    websocket.onclose = message => {
+      console.log('camWebSocket Closing connection to server..');
+      setTimeout(initializeSockets, 2000);
+    };
+  }
+
+  setInterval(loop, 100);
 }
 
 function loop() {
@@ -60,5 +66,9 @@ function loop() {
 
   d = new Date();
   time = d.getMilliseconds();
-  websocket.send(setr);
+
+  // Send data to tank
+  if (!test) {
+    websocket.send(setr);
+  }
 }
