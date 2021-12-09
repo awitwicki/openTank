@@ -52,10 +52,13 @@
   margin-bottom: 0.3em;
 }
 
-#joyDiv {
-  width: 200px;
-  height: 200px;
+.joyDiv {
+  width: 128px;
+  height: 128px;
   position: absolute;
   bottom: 50px;
   right: 50px;
+  background-color:rgba(0, 0, 0, 0.1);
+  border: 3px solid black;
+  border-radius: 50%;
 }

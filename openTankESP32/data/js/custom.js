@@ -1,5 +1,5 @@
 // Use this for tests on local machine without websocket server
-var isTest = false;
+var test = false;
 
 var targetUrl = "ws://" + window.location.host + ":82";
 
@@ -14,28 +14,20 @@ window.addEventListener('load', onLoad);
 const view = document.getElementById('stream');
 
 var setr = [0, 0];
-var joy;
+let joystick;
 
 var d = new Date();
 var time = d.getMilliseconds();
 
 function onLoad() {
-  var joyStickParameters = {
-    internalFillColor: "#000000",
-    internalLineWidth: "#000000",
-    internalStrokeColor: "#999999",
-    externalStrokeColor: "#000000",
-  };
-
-  joy = new JoyStick('joyDiv', joyStickParameters);
-
+  joystick = new JoystickController("stick", 64, 8);
   initializeSockets();
 }
 
 function initializeSockets() {
   console.log('Opening WebSocket connection to OpenTank ESP32...');
 
-  if (!isTest) {
+  if (!test) {
     websocket = new WebSocket(targetUrl);
 
     websocket.onopen = event => {
@@ -44,7 +36,7 @@ function initializeSockets() {
 
     websocket.onmessage = message => {
       if (message.data instanceof Blob) {
-        console.log("WebSocket image received")
+        // console.log("WebSocket image received")
         var urlObject = URL.createObjectURL(message.data);
         view.src = urlObject;
       }
@@ -65,9 +57,9 @@ function initializeSockets() {
 }
 
 function loop() {
-  // Get data from canvas joystick
-  setr[0] = joy.GetX();
-  setr[1] = joy.GetY();
+  // Get data from joystick
+  setr[0] = joystick.value.x * 100;
+  setr[1] = -joystick.value.y * 100;
 
   // Get data from keyboard ONE KEY PER TIME
   // Keyboard control override joystick
@@ -90,7 +82,7 @@ function loop() {
   time = d.getMilliseconds();
 
   // Send data to tank
-  if (!isTest) {
+  if (!test) {
     websocket.send(setr);
   }
 }

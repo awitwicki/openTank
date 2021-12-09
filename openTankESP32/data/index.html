@@ -12,20 +12,27 @@
 
 <body>
     <div class="bg-image">
-        <img id="stream" src="">
+        <img id="stream">
     </div>
     <div class="bg-content">
         <div class="container">
             <div class="hero">
                 <h2 id="stat">OpenTank with ESP32 and Websockets</h2>
             </div>
-            <div id="joyDiv"></div>
+            <div class="joyDiv">
+                <div>
+                    <div id="stick" style="position: absolute; left:32px; top:32px;">
+                        <svg version="1.1" baseProfile="full" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="32" cy="32" r="28" fill="black"
+                                style="fill:black; stroke:black; stroke-width:3; fill-opacity:0.3; stroke-opacity:0.9;" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <script src="js/custom.js"></script>
-    <script src="js/joy.js"></script>
-    </div>
+        <script src="js/custom.js"></script>
+        <script src="js/joy.js"></script>
     </div>
 </body>
 
