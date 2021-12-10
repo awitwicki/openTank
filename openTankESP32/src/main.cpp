@@ -4,6 +4,8 @@
 #include "SPIFFS.h"
 #include "esp_camera.h"
 
+// Access point WiFi mode, comment it if you need to wifi client mode
+#define AP
 
 // Motors configuration
 static const uint8_t LEFT_MOTOR = 0;
@@ -78,10 +80,7 @@ void setMotors(int steerValue, int forwardValue) {
   }
 }
 
-void setup() {
-  Serial.begin(115200);
-
-  // Configure motors PWM
+void initMotors() {
   // Forward motor A PWM
   ledcSetup(1, 200, 8);    //channel, freq, resolution
   ledcAttachPin(LeftMotorPinA, 1); // pin, channel
@@ -102,6 +101,39 @@ void setup() {
   for (int i = 0; i < 4; i++) {
     ledcWrite(i, 0);
   }
+}
+
+void initWiFi() {
+  // WiFi Access point
+  #ifdef AP
+    WiFi.softAP(ssid, password);
+    Serial.print("AP IP Address: ");
+    Serial.println(WiFi.softAPIP());
+  #endif
+
+  // WiFi station
+  #ifndef AP
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+
+    // Waiting for connection to wifi
+    while (WiFi.status() != WL_CONNECTED) {
+      Serial.print(".");
+      delay(1000);
+    }
+
+    Serial.println("");
+    Serial.println("WiFi connected");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+  #endif
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // Configure motors PWM
+  initMotors();
 
  // Camera module pinout configuration
   camera_config_t config;
@@ -147,26 +179,8 @@ void setup() {
   sensor_t *s = esp_camera_sensor_get();
   s->set_framesize(s, FRAMESIZE_SVGA);
 
-  //WiFi create Access point
-  WiFi.softAP(ssid, password);
-
-  // This code for AP mode
-  // WiFi.mode(WIFI_STA);
-  // WiFi.begin(ssid, password);
-
-  Serial.print("AP IP Address: ");
-  Serial.println(WiFi.softAPIP());
-
-  // Waiting for connection to wifi
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(1000);
-  }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP()); // You can get IP address assigned to ESP
+  // Initialize Wi-Fi
+  initWiFi();
 
   // Initialize SPIFFS
   if (!SPIFFS.begin(true)) {
