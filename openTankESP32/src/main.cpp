@@ -25,33 +25,26 @@ const char *password = "88888888";
 camera_fb_t *fb = NULL;
 
 using namespace websockets;
-WebsocketsServer server;
+WebsocketsServer websocketserver;
 AsyncWebServer webserver(80);
 
 int LeftValue = 0; // Left motor
 int RightValue = 0; // Right motor
 
 void setMotorPWM(int motorNumber, int channelValue) {
-  int motorFrontPWM, motorBackPWM = 0;
+  int motorFrontPWM = 0;
+  int motorBackPWM = 0;
 
-  // Forward
-  if (channelValue > 0) {
+  if (channelValue > 0) { // Forward 0..100
     motorFrontPWM = map(channelValue, 0, 100, 0, 255); //255 => 8 bit timer
-  }
-  else {
-    motorFrontPWM = 0;
-  }
-
-  // Backward
-  if (channelValue < 0) {
+  } else
+  
+  if (channelValue < 0) { // Backward
     motorBackPWM = map(channelValue, -100, 0, 255, 0); //255 => 8 bit timer
-  }
-  else {
-    motorBackPWM = 0;
-  }
+  } 
 
   if (motorNumber == LEFT_MOTOR) {
-    ledcWrite(1, motorFrontPWM);
+    ledcWrite(8, motorFrontPWM);
     ledcWrite(2, motorBackPWM);
   }
   else if (motorNumber == RIGHT_MOTOR) {
@@ -69,6 +62,7 @@ void setMotors(int steerValue, int forwardValue) {
   rightMotorValue = max(-100, min(100, rightMotorValue));
   leftMotorValue = max(-100, min(100, leftMotorValue));
 
+  // 2
   if (LeftValue != leftMotorValue) {
     LeftValue = leftMotorValue;
     setMotorPWM(LEFT_MOTOR, LeftValue);
@@ -80,30 +74,26 @@ void setMotors(int steerValue, int forwardValue) {
   }
 }
 
-void initMotors() {
-  // Forward motor A PWM
-  ledcSetup(1, 200, 8);    //channel, freq, resolution
-  ledcAttachPin(LeftMotorPinA, 1); // pin, channel
+void configureMotors() {
+  // Forward motor A (Left) PWM
+  // 1st channel does not work correctly in this configuration!
+  ledcSetup(8, 200, 8);    //channel, freq, resolution
+  ledcAttachPin(LeftMotorPinA, 8); // pin, channel
 
-  // Backward motor A PWM
+  // Backward motor A (Left) PWM
   ledcSetup(2, 200, 8);    //channel, freq, resolution
   ledcAttachPin(LeftMotorPinB, 2); // pin, channel
 
-  // Forward motor B PWM
-  ledcSetup(1, 200, 8);    //channel, freq, resolution
+  // Forward motor B (Right) PWM
+  ledcSetup(3, 200, 8);    //channel, freq, resolution
   ledcAttachPin(RightMotorPinA, 3); // pin, channel
 
-  // Backward motor B PWM
-  ledcSetup(2, 200, 8);    //channel, freq, resolution
+  // Backward motor B (Right) PWM
+  ledcSetup(4, 200, 8);    //channel, freq, resolution
   ledcAttachPin(RightMotorPinB, 4); // pin, channel
-
-  // Set all pwm's to 0
-  for (int i = 0; i < 4; i++) {
-    ledcWrite(i, 0);
-  }
 }
 
-void initWiFi() {
+void configureWiFi() {
   // WiFi Access point
   #ifdef AP
     WiFi.softAP(ssid, password);
@@ -129,13 +119,8 @@ void initWiFi() {
   #endif
 }
 
-void setup() {
-  Serial.begin(115200);
-
-  // Configure motors PWM
-  initMotors();
-
- // Camera module pinout configuration
+void configureCamera() {
+  // Camera module pinout configuration
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -178,24 +163,14 @@ void setup() {
 
   sensor_t *s = esp_camera_sensor_get();
   s->set_framesize(s, FRAMESIZE_SVGA);
+}
 
-  // Initialize Wi-Fi
-  initWiFi();
-
-  // Initialize SPIFFS
-  if (!SPIFFS.begin(true)) {
-    Serial.println("An Error has occurred while mounting SPIFFS");
-    return;
-  }
-
+void configureWebSerwer() {
+  // Route default path
   webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     Serial.println("Requesting index page...");
     request->send(SPIFFS, "/index.html", "text/html", false);
   });
-
-  // Route to load entireframework.min.css file
-  webserver.on("/css/entireframework.min.css", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/css/entireframework.min.css", "text/css"); });
 
   // Route to load custom.css file
   webserver.on("/css/custom.css", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -210,9 +185,29 @@ void setup() {
     request->send(SPIFFS, "/js/joy.js", "text/javascript"); });
 
   webserver.begin();
-  server.listen(82);
+  websocketserver.listen(82);
   Serial.print("Is server live? ");
-  Serial.println(server.available());
+  Serial.println(websocketserver.available());
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Setup");
+
+  configureMotors();
+
+  configureCamera();
+
+  configureWiFi();
+
+  // Initialize SPIFFS
+  if (!SPIFFS.begin(true)) {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  }
+
+  // Configure webserver
+  configureWebSerwer();
 }
 
 void handle_message(WebsocketsMessage msg) {
@@ -220,12 +215,16 @@ void handle_message(WebsocketsMessage msg) {
   int steerValue = msg.data().substring(0, commaIndex).toInt();
   int forwardValue = msg.data().substring(commaIndex + 1).toInt();
 
+  Serial.println(forwardValue);
   setMotors(steerValue, forwardValue);
 }
 
+int counter = 0;
+int digit = 1;
+
 void loop() {
   // Mjpeg camera stream
-  auto client = server.accept();
+  auto client = websocketserver.accept();
   client.onMessage(handle_message);
 
   while (client.available()) {
