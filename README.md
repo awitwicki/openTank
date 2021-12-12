@@ -11,12 +11,12 @@
 - L298N
 - 12V Baterry
 
-## ESP32 realization
+## OpenTank ESP32
 * [ESP32 PWM with camera](/openTankESP32/README.md)
 
-## Raspberry Pi realization
-* [Raspberry Pi PWM realization using SSH](/opentank/demotank_ssh.py)
-* [Raspberry Pi PWM realization using websocket server](/opentank/ws_server.py)
+## OpenTank Raspberry Pi
 
-## Arduino realization
+* [Raspberry Pi PWM realization](/openTankRpi/README.md)
+
+## OpenTank Arduino
 * [Arduino PWM realization using radio receiver](/openTankArduino)

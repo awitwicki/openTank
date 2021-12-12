@@ -6,11 +6,11 @@ GPIO.setwarnings(False)
 #set GPIO numbering mode and define output pins
 GPIO.setmode(GPIO.BOARD)
 
-motor1a = 8
-motor1b = 10
+motor1a = 7
+motor1b = 5
 
-motor2a = 5
-motor2b = 7
+motor2a = 8
+motor2b = 10
 
 GPIO.setup(motor1a,GPIO.OUT)
 GPIO.setup(motor1b,GPIO.OUT)
