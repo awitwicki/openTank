@@ -58,8 +58,8 @@ function initializeSockets() {
 
 function loop() {
   // Get data from joystick
-  setr[0] = joystick.value.x * 100;
-  setr[1] = -joystick.value.y * 100;
+  setr[0] = Math.round(joystick.value.x * 100);
+  setr[1] = Math.round(-joystick.value.y * 100);
 
   // Get data from keyboard ONE KEY PER TIME
   // Keyboard control override joystick
@@ -83,6 +83,11 @@ function loop() {
 
   // Send data to tank
   if (!test) {
-    websocket.send(setr);
+    // check if websocket connected
+    if (websocket.readyState == websocket.OPEN) {
+      websocket.send(setr);
+    }
   }
+
+  console.log(setr);
 }

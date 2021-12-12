@@ -41,8 +41,6 @@
 ## Wiring
 <img src="../img/rpi.png">
 
-
-
 <hr>
 
 * Needs for battery voltage ~5-12V

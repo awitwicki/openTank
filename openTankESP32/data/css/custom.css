@@ -36,18 +36,16 @@
 }
 
 .container {
-  margin: 0 20px;
   width: auto;
 }
 
 .hero {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 20px;
-  border-radius: 10px;
-  margin-top: 1em;
+  color: lightgreen;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 15px;
 }
 
-.hero h1 {
+.hero h2 {
   margin-top: 0;
   margin-bottom: 0.3em;
 }
