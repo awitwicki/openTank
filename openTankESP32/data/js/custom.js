@@ -21,6 +21,10 @@ var d = new Date();
 var time = d.getMilliseconds();
 var lastFrameTime = d;
 var fps = 0;
+var ping = 0;
+
+// Send ws commands
+var commandsSent = [];
 
 function onLoad() {
   joystick = new JoystickController("stick", 64, 8);
@@ -42,11 +46,11 @@ function initializeSockets() {
     };
 
     websocket.onmessage = message => {
+      dateNow = new Date();
+
       if (message.data instanceof Blob) { // WebSocket image received
         // Calculate fps
-        dateNow = new Date();
         fps = (dateNow - lastFrameTime);
-        // fps = (dateNow - lastFrameTime).getMilliseconds();
         fps = 1000 / fps;
         fps = Math.round(fps * 100) / 100;
         lastFrameTime = dateNow;
@@ -57,7 +61,16 @@ function initializeSockets() {
       }
 
       // Calculate ping
-      var ping = d.getMilliseconds() - time;
+      if (commandsSent.length > 0) {
+        var oldestCommandSent = commandsSent[0];
+        ping = (dateNow - oldestCommandSent);
+
+        // Delete first element
+        commandsSent.shift();
+      }
+
+      // Append new timestamp of command sent
+      commandsSent.push(dateNow);
 
       // Update data
       drawUI(ping, fps);
