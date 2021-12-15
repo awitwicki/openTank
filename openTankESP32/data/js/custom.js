@@ -16,12 +16,19 @@ const view = document.getElementById('stream');
 var setr = [0, 0];
 let joystick;
 
+// Time calculations
 var d = new Date();
 var time = d.getMilliseconds();
+var lastFrameTime = d;
+var fps = 0;
 
 function onLoad() {
   joystick = new JoystickController("stick", 64, 8);
   initializeSockets();
+}
+
+function drawUI(ping, fps) {
+  document.getElementById('stat').innerHTML = 'ping: ' + ping + 'ms, ' + fps +'FPS';
 }
 
 function initializeSockets() {
@@ -35,16 +42,25 @@ function initializeSockets() {
     };
 
     websocket.onmessage = message => {
-      if (message.data instanceof Blob) {
-        // console.log("WebSocket image received")
+      if (message.data instanceof Blob) { // WebSocket image received
+        // Calculate fps
+        dateNow = new Date();
+        fps = (dateNow - lastFrameTime);
+        // fps = (dateNow - lastFrameTime).getMilliseconds();
+        fps = 1000 / fps;
+        fps = Math.round(fps * 100) / 100;
+        lastFrameTime = dateNow;
+
+        // Parse image and show it on page
         var urlObject = URL.createObjectURL(message.data);
         view.src = urlObject;
       }
 
-      d = new Date();
+      // Calculate ping
       var ping = d.getMilliseconds() - time;
-    
-      document.getElementById('stat').innerHTML = 'ping: ' + ping + 'ms';
+
+      // Update data
+      drawUI(ping, fps);
     };
 
     websocket.onclose = message => {
