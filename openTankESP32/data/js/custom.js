@@ -27,7 +27,11 @@ var ping = 0;
 var commandsSent = [];
 
 function onLoad() {
-  joystick = new JoystickController("stick", 64, 8);
+  // Get joystick area width
+  var joystickWidth = document.getElementById("joyDiv").clientWidth;
+  joystickWidth /= 2;
+
+  joystick = new JoystickController("stick", joystickWidth, 8);
   initializeSockets();
 }
 

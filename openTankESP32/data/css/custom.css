@@ -79,3 +79,29 @@
   border: 3px solid black;
   border-radius: 50%;
 }
+
+/* For smartwatch */
+@media screen and (max-width: 360px) {
+   .joyDiv {
+    width: 350px;
+    height: 350px;
+    right: 2px;
+    bottom: 2px;
+    background-color:rgba(255, 0, 0, 0.0);
+  }
+
+  #stick {
+    left:162px;
+    top:162px;
+  }
+
+  #circ {
+    width: 90px;
+    height: 90px;
+    border: 0px;
+  }
+
+  .hero {
+    display: none;
+  }
+}
