@@ -1,7 +1,7 @@
 // Use this for tests on local machine without websocket server
 var test = false;
 
-var targetUrl = "ws://" + window.location.host + ":82";
+var targetUrl = "ws://" + window.location.hostname + ":82";
 
 // Keyboard
 var pressedKeys = {};
