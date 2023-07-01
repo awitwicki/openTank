@@ -1,13 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>OpenTank</title>
-
-    <link href="css/custom.css" rel="stylesheet" type="text/css">
+    <link href="css/index.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
@@ -15,20 +13,22 @@
         <img id="stream">
     </div>
     <div class="bg-content">
-        <div class="container">
+        <div>
             <div class="hero">
                 <h2 id="stat">OpenTank with ESP32 and Websockets</h2>
             </div>
+            <div class="settingsDiv" id="fullscreenBtn">
+                <h2 class="screenSettingsBtn">⛶</h2>
+            </div>
             <div class="joyDiv" id="joyDiv">
                 <div id="stick">
-                    <div id="circ">
-                    </div>
+                    <div id="circ" />
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="js/custom.js"></script>
+    <script src="js/index.js"></script>
     <script src="js/joy.js"></script>
 </body>
 
