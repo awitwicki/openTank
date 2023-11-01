@@ -172,15 +172,15 @@ void configureWebSerwer() {
     request->send(SPIFFS, "/index.html", "text/html", false);
   });
 
-  // Route to load custom.css file
-  webserver.on("/css/custom.css", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/css/custom.css", "text/css"); });
+  // Route to load index.css file
+  webserver.on("/css/index.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/css/index.css", "text/css"); });
 
-  // Route to load custom.js file
-  webserver.on("/js/custom.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/js/custom.js", "text/javascript"); });
+  // Route to load index.js file
+  webserver.on("/js/index.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/js/index.js", "text/javascript"); });
 
-  // Route to load custom.js file
+  // Route to load joy.js file
   webserver.on("/js/joy.js", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/js/joy.js", "text/javascript"); });
 
