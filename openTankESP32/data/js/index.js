@@ -1,30 +1,30 @@
 // Use this for tests on local machine without websocket server
-const test = true;
+const test = false;
 
-var targetUrl = `ws://${window.location.hostname}:82`;
+const targetUrl = `ws://${window.location.hostname}:82`;
 
 // Keyboard
-var pressedKeys = {};
+let pressedKeys = {};
 window.onkeyup = function (e) { pressedKeys[e.keyCode] = false; }
 window.onkeydown = function (e) { pressedKeys[e.keyCode] = true; }
 
-var websocket;
+let websocket;
 window.addEventListener('load', onLoad);
 
 const view = document.getElementById('stream');
 
-var setr = [0, 0];
+let setr = [0, 0];
 let joystick;
 
 // Time calculations
-var d = new Date();
-var time = d.getMilliseconds();
-var lastFrameTime = d;
-var fps = 0;
-var ping = 0;
+let d = new Date();
+let time = d.getMilliseconds();
+let lastFrameTime = d;
+let fps = 0;
+let ping = 0;
 
 // Send ws commands
-var commandsSent = [];
+let commandsSent = [];
 
 // View in fullscreen
 function openFullscreen() {
@@ -51,8 +51,8 @@ function closeFullscreen() {
 }
 
 // Get background click object
-var object = document.getElementById('fullscreenBtn');
-var fullScreen = false;
+let object = document.getElementById('fullscreenBtn');
+let fullScreen = false;
 
 object.onclick = function(){
   if (!fullScreen) {
@@ -88,7 +88,7 @@ function initializeSockets() {
     };
 
     websocket.onmessage = message => {
-      dateNow = new Date();
+      const dateNow = new Date();
 
       if (message.data instanceof Blob) { // WebSocket image received
         // Calculate fps
